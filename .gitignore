@@ -1,0 +1,11 @@
+node_modules/
+.next/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.env
+.env.local
+restaurant.db
+tsconfig.tsbuildinfo
+.DS_Store
