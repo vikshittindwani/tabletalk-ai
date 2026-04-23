@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { X, Minus, Plus, Trash2, ShoppingBag } from 'lucide-react'
 import { useStore } from '@/lib/store'
 import { useRouter } from 'next/navigation'
+import { buildApiUrl } from '@/lib/api'
 
 interface CartSidebarProps {
   isOpen: boolean
@@ -27,8 +28,7 @@ export function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
     setIsPlacingOrder(true)
 
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
-      const response = await fetch(`${apiUrl}/api/orders`, {
+      const response = await fetch(buildApiUrl('/api/orders'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

@@ -5,6 +5,7 @@ import { motion } from 'framer-motion'
 import { TrendingUp, TrendingDown, Clock, DollarSign, ShoppingBag, AlertCircle, Play, CheckCircle, Check, Mic } from 'lucide-react'
 import { Navigation } from '@/components/navigation'
 import { StoreProvider, useStore, Order } from '@/lib/store'
+import { buildApiUrl } from '@/lib/api'
 import { cn } from '@/lib/utils'
 
 const voiceOrderLogs = [
@@ -121,8 +122,7 @@ function AdminPage() {
   useEffect(() => {
     setIsHydrated(true)
 
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
-    fetch(`${apiUrl}/api/orders`)
+    fetch(buildApiUrl('/api/orders'))
       .then(r => r.json())
       .then(data => {
         if (data.orders && data.orders.length > 0) {
@@ -151,8 +151,7 @@ function AdminPage() {
       setApiOrders(prev => prev.map(o => o.id === orderId ? { ...o, status } : o))
     }
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
-      await fetch(`${apiUrl}/api/orders/${orderId}`, {
+      await fetch(buildApiUrl(`/api/orders/${orderId}`), {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status }),

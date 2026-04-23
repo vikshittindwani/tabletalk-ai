@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { AlertCircle, Check, Loader2, Mic, ShoppingBag, Square, X } from 'lucide-react'
 import { menuItems, useStore } from '@/lib/store'
+import { buildApiUrl } from '@/lib/api'
 import { cn } from '@/lib/utils'
 
 interface VoiceOrderModalProps {
@@ -94,8 +95,7 @@ export function VoiceOrderModal({ isOpen, onClose, onOrderComplete }: VoiceOrder
   }, [isOpen])
 
   const sendToGroq = async (text: string) => {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
-    const response = await fetch(`${apiUrl}/api/voice`, {
+    const response = await fetch(buildApiUrl('/api/voice'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ transcript: text }),

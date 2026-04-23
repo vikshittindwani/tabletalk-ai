@@ -6,6 +6,7 @@ import { Check, Clock, ChefHat, PackageCheck, CircleDot, CreditCard, Search } fr
 import { Navigation } from '@/components/navigation'
 import { VoiceButton } from '@/components/voice-button'
 import { StoreProvider, useStore, Order } from '@/lib/store'
+import { buildApiUrl } from '@/lib/api'
 import { cn } from '@/lib/utils'
 
 const statusSteps = [
@@ -55,8 +56,7 @@ function TrackPage() {
   const [loadedFromApi, setLoadedFromApi] = useState(false)
   
   useEffect(() => {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
-    fetch(`${apiUrl}/api/orders`)
+    fetch(buildApiUrl('/api/orders'))
       .then(r => r.json())
       .then(data => {
         if (data.orders && Array.isArray(data.orders)) {
