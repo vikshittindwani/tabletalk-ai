@@ -3,6 +3,8 @@ import base64
 import html
 import json
 import os
+import uuid
+from datetime import datetime
 from typing import Dict, Optional
 from urllib.parse import parse_qs
 
@@ -62,12 +64,23 @@ def row_to_order(row: dict):
     }
 
 def save_order(customer_name: str, items: list, total: float):
-    response = supabase.table("orders").insert({
-        "customer_name": customer_name,
-        "items": items,
-        "total": total,
-        "status": "pending"
-    }).execute()
+    order_number = 1000 + (int(datetime.utcnow().timestamp()) % 9000)
+    try:
+        response = supabase.table("orders").insert({
+            "id": str(uuid.uuid4()),
+            "order_number": order_number,
+            "customer_name": customer_name,
+            "items": items,
+            "total": total,
+            "status": "pending",
+            "timestamp": datetime.utcnow().isoformat(),
+            "estimated_time": 20,
+        }).execute()
+    except Exception as error:
+        raise HTTPException(status_code=500, detail=f"Unable to save order: {error}") from error
+
+    if not response.data:
+        raise HTTPException(status_code=500, detail="Order was not saved.")
     return row_to_order(response.data[0])
 
 async def send_twilio_audio(websocket: WebSocket, stream_sid: str, mulaw_audio: bytes):
@@ -239,7 +252,11 @@ def create_order(body: CreateOrderRequest):
 
 @app.get("/api/orders")
 def get_orders():
-    response = supabase.table("orders").select("*").order("timestamp", desc=True).execute()
+    try:
+        response = supabase.table("orders").select("*").order("timestamp", desc=True).execute()
+    except Exception as error:
+        raise HTTPException(status_code=500, detail=f"Unable to load orders: {error}") from error
+
     return {"orders": [row_to_order(row) for row in response.data]}
 
 
@@ -249,7 +266,11 @@ def update_order_status(order_id: str, body: UpdateStatusRequest):
     if body.status not in valid_statuses:
         raise HTTPException(status_code=400, detail=f"Invalid status. Must be one of: {valid_statuses}")
 
-    response = supabase.table("orders").update({"status": body.status}).eq("id", order_id).execute()
+    try:
+        response = supabase.table("orders").update({"status": body.status}).eq("id", order_id).execute()
+    except Exception as error:
+        raise HTTPException(status_code=500, detail=f"Unable to update order: {error}") from error
+
     if not response.data:
         raise HTTPException(status_code=404, detail="Order not found")
     

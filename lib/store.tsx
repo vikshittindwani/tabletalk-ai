@@ -246,7 +246,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       .then(async res => {
         if (!res.ok) {
           const message = await res.text()
-          throw new Error(message || `Order sync failed with status ${res.status}`)
+          throw new Error(`Order sync failed (${res.status}): ${message || res.statusText}`)
         }
 
         return res.json()
@@ -258,7 +258,9 @@ export function StoreProvider({ children }: { children: ReactNode }) {
           setCurrentOrder(prev => prev?.id === newOrder.id ? { ...prev, id: data.id, orderNumber: data.orderNumber } : prev)
         }
       })
-      .catch(console.error)
+      .catch(error => {
+        console.error(error instanceof Error ? error.message : error)
+      })
     }
 
     return newOrder
