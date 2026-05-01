@@ -5,7 +5,7 @@ import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { Chrome, KeyRound, Mail, MessageSquareText, ShieldPlus, UserPlus } from "lucide-react"
 
-import { supabase } from "@/lib/supabase"
+import { supabase } from "../../../lib/supabase"
 
 type AuthMethod = "google" | "email" | "phone" | "form"
 
