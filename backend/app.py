@@ -4,12 +4,14 @@ import html
 import json
 import os
 from typing import Dict, Optional
+from urllib.parse import parse_qs
 
 from fastapi import FastAPI, HTTPException, Request, Response, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
+from supabase import create_client, Client
+from dotenv import load_dotenv, find_dotenv
 
 from .config import TWILIO_MIN_SPEECH_CHUNKS, TWILIO_RMS_THRESHOLD, TWILIO_SILENCE_THRESHOLD
-from .db import get_db, init_db, row_to_order, save_order
 from .menu import MENU_ITEMS
 from .schemas import CallSession, CreateOrderRequest, UpdateStatusRequest, VoiceOrderRequest, WhatsAppSession
 from .services import (
@@ -35,8 +37,38 @@ app.add_middleware(
 call_sessions: Dict[str, CallSession] = {}
 whatsapp_sessions: Dict[str, WhatsAppSession] = {}
 
-init_db()
+# Explicitly load the .env file from the project root directory
+project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+load_dotenv(os.path.join(project_root, ".env"))
+load_dotenv(os.path.join(project_root, ".env.local"))
 
+supabase_url: str = os.environ.get("NEXT_PUBLIC_SUPABASE_URL", "")
+supabase_key: str = os.environ.get("NEXT_PUBLIC_SUPABASE_ANON_KEY", "")
+
+if not supabase_url or not supabase_key:
+    raise RuntimeError("Supabase environment variables are missing. Please check your .env file.")
+supabase: Client = create_client(supabase_url, supabase_key)
+
+def row_to_order(row: dict):
+    return {
+        "id": str(row["id"]),
+        "orderNumber": row.get("order_number"),
+        "customerName": row.get("customer_name"),
+        "items": row.get("items", []),
+        "total": float(row.get("total", 0)),
+        "status": row.get("status"),
+        "timestamp": row.get("timestamp"),
+        "estimatedTime": row.get("estimated_time", 18)
+    }
+
+def save_order(customer_name: str, items: list, total: float):
+    response = supabase.table("orders").insert({
+        "customer_name": customer_name,
+        "items": items,
+        "total": total,
+        "status": "pending"
+    }).execute()
+    return row_to_order(response.data[0])
 
 async def send_twilio_audio(websocket: WebSocket, stream_sid: str, mulaw_audio: bytes):
     chunk_size = 160
@@ -207,12 +239,8 @@ def create_order(body: CreateOrderRequest):
 
 @app.get("/api/orders")
 def get_orders():
-    conn = get_db()
-    try:
-        rows = conn.execute("SELECT * FROM orders ORDER BY timestamp DESC").fetchall()
-        return {"orders": [row_to_order(row) for row in rows]}
-    finally:
-        conn.close()
+    response = supabase.table("orders").select("*").order("timestamp", desc=True).execute()
+    return {"orders": [row_to_order(row) for row in response.data]}
 
 
 @app.patch("/api/orders/{order_id}")
@@ -221,17 +249,11 @@ def update_order_status(order_id: str, body: UpdateStatusRequest):
     if body.status not in valid_statuses:
         raise HTTPException(status_code=400, detail=f"Invalid status. Must be one of: {valid_statuses}")
 
-    conn = get_db()
-    try:
-        result = conn.execute("UPDATE orders SET status = ? WHERE id = ?", (body.status, order_id))
-        conn.commit()
-        if result.rowcount == 0:
-            raise HTTPException(status_code=404, detail="Order not found")
-
-        updated = conn.execute("SELECT * FROM orders WHERE id = ?", (order_id,)).fetchone()
-        return row_to_order(updated)
-    finally:
-        conn.close()
+    response = supabase.table("orders").update({"status": body.status}).eq("id", order_id).execute()
+    if not response.data:
+        raise HTTPException(status_code=404, detail="Order not found")
+    
+    return row_to_order(response.data[0])
 
 
 @app.post("/api/voice")
@@ -259,11 +281,18 @@ def phone_agent_status():
 async def twilio_voice_webhook(request: Request):
     stream_url = os.getenv("TWILIO_STREAM_URL")
     if not stream_url:
+        stream_url = str(request.url_for("twilio_media_stream"))
+        stream_url = stream_url.replace("https://", "wss://", 1).replace("http://", "ws://", 1)
+
+    if not stream_url:
         xml = "<Response><Say>The AI ordering line is not configured yet. Please contact the restaurant.</Say></Response>"
         return Response(content=xml, media_type="text/xml")
 
-    form = await request.form()
-    caller = str(form.get("From", "Unknown caller"))
+    caller = "Unknown caller"
+    if request.method == "POST":
+        body = (await request.body()).decode("utf-8", errors="ignore")
+        form = parse_qs(body)
+        caller = form.get("From", [caller])[0]
     caller_value = html.escape(caller, quote=True)
     stream_value = html.escape(stream_url, quote=True)
 
