@@ -45,7 +45,10 @@ load_dotenv(os.path.join(project_root, ".env"))
 load_dotenv(os.path.join(project_root, ".env.local"))
 
 supabase_url: str = os.environ.get("NEXT_PUBLIC_SUPABASE_URL", "")
-supabase_key: str = os.environ.get("NEXT_PUBLIC_SUPABASE_ANON_KEY", "")
+supabase_key: str = (
+    os.environ.get("SUPABASE_SERVICE_ROLE_KEY")
+    or os.environ.get("NEXT_PUBLIC_SUPABASE_ANON_KEY", "")
+)
 
 if not supabase_url or not supabase_key:
     raise RuntimeError("Supabase environment variables are missing. Please check your .env file.")
