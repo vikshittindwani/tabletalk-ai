@@ -1,7 +1,6 @@
 "use client"
 
 import { createContext, useContext, useState, ReactNode } from 'react'
-import { buildApiUrl } from '@/lib/api'
 
 export interface MenuItem {
   id: string
@@ -235,7 +234,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
     // Automatically save the order to the backend (Supabase) if not already synced
     if (!backendId) {
-      fetch(buildApiUrl('/api/orders'), {
+      fetch('/api/orders', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

@@ -18,14 +18,20 @@ export async function PATCH(
   { params }: { params: Promise<{ orderId: string }> },
 ) {
   const { orderId } = await params
-  const response = await fetch(`${getBackendUrl()}/api/orders/${orderId}`, {
-    method: 'PATCH',
-    headers: {
-      'Content-Type': request.headers.get('content-type') || 'application/json',
-    },
-    body: await request.text(),
-    cache: 'no-store',
-  })
+  let response: Response
+
+  try {
+    response = await fetch(`${getBackendUrl()}/api/orders/${orderId}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': request.headers.get('content-type') || 'application/json',
+      },
+      body: await request.text(),
+      cache: 'no-store',
+    })
+  } catch {
+    return NextResponse.json({ error: 'Backend orders API is unavailable.' }, { status: 502 })
+  }
 
   const responseBody = await response.text()
   return new NextResponse(responseBody, {

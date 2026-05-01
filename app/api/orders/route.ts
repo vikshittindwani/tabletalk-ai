@@ -15,14 +15,20 @@ function getBackendUrl() {
 
 async function proxyOrders(request: NextRequest) {
   const body = request.method === 'GET' ? undefined : await request.text()
-  const response = await fetch(`${getBackendUrl()}/api/orders`, {
-    method: request.method,
-    headers: {
-      'Content-Type': request.headers.get('content-type') || 'application/json',
-    },
-    body,
-    cache: 'no-store',
-  })
+  let response: Response
+
+  try {
+    response = await fetch(`${getBackendUrl()}/api/orders`, {
+      method: request.method,
+      headers: {
+        'Content-Type': request.headers.get('content-type') || 'application/json',
+      },
+      body,
+      cache: 'no-store',
+    })
+  } catch {
+    return NextResponse.json({ error: 'Backend orders API is unavailable.' }, { status: 502 })
+  }
 
   const responseBody = await response.text()
   return new NextResponse(responseBody, {
