@@ -1,6 +1,7 @@
 "use client"
 
 import { createContext, useContext, useState, ReactNode } from 'react'
+import { buildApiUrl } from '@/lib/api'
 
 export interface MenuItem {
   id: string
@@ -231,6 +232,36 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     setOrderCounter(prev => prev + 1)
     setCurrentOrder(newOrder)
     clearCart()
+
+    // Automatically save the order to the backend (Supabase) if not already synced
+    if (!backendId) {
+      fetch(buildApiUrl('/api/orders'), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          customerName: newOrder.customerName,
+          items: newOrder.items,
+          total: newOrder.total
+        })
+      })
+      .then(async res => {
+        if (!res.ok) {
+          const message = await res.text()
+          throw new Error(message || `Order sync failed with status ${res.status}`)
+        }
+
+        return res.json()
+      })
+      .then(data => {
+        if (data && data.id) {
+          // Update the optimistic local order with the real Supabase ID and Order Number
+          setOrders(prev => prev.map(o => o.id === newOrder.id ? { ...o, id: data.id, orderNumber: data.orderNumber } : o))
+          setCurrentOrder(prev => prev?.id === newOrder.id ? { ...prev, id: data.id, orderNumber: data.orderNumber } : prev)
+        }
+      })
+      .catch(console.error)
+    }
+
     return newOrder
   }
 

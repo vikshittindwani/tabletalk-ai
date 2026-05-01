@@ -122,10 +122,15 @@ function AdminPage() {
   useEffect(() => {
     setIsHydrated(true)
 
-    fetch(buildApiUrl('/api/orders'))
-      .then(r => r.json())
-      .then(data => {
-        if (data.orders && data.orders.length > 0) {
+    const loadOrders = async () => {
+      try {
+        const response = await fetch(buildApiUrl('/api/orders'), { cache: 'no-store' })
+        if (!response.ok) {
+          return
+        }
+        const data = await response.json()
+
+        if (Array.isArray(data.orders)) {
           const normalized: Order[] = data.orders.map((o: Record<string, unknown>) => ({
             id: o.id as string,
             orderNumber: o.orderNumber as number,
@@ -139,8 +144,13 @@ function AdminPage() {
           setApiOrders(normalized)
           setLoadedFromApi(true)
         }
-      })
-      .catch(() => {})
+      } catch {}
+    }
+
+    loadOrders()
+    const intervalId = window.setInterval(loadOrders, 5000)
+
+    return () => window.clearInterval(intervalId)
   }, [])
 
   const orders = loadedFromApi ? apiOrders : storeOrders
@@ -202,7 +212,7 @@ function AdminPage() {
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
             <StatCard
               title="Today's Orders"
-              value={47}
+              value={orders.length}
               trend={12}
               trendLabel="vs yesterday"
               icon={ShoppingBag}
