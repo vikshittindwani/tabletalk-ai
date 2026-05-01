@@ -1,8 +1,9 @@
 "use client"
 
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
-import { TrendingUp, TrendingDown, Clock, DollarSign, ShoppingBag, AlertCircle, Play, CheckCircle, Check, Mic } from 'lucide-react'
+import { TrendingUp, TrendingDown, Clock, DollarSign, ShoppingBag, AlertCircle, Play, CheckCircle, Check, Mic, LogOut, Lock } from 'lucide-react'
 import { Navigation } from '@/components/navigation'
 import { StoreProvider, useStore, Order } from '@/lib/store'
 import { buildApiUrl } from '@/lib/api'
@@ -115,9 +116,11 @@ function StatusBadge({ status }: { status: Order['status'] }) {
 
 function AdminPage() {
   const { orders: storeOrders, updateOrderStatus: updateStoreStatus } = useStore()
+  const router = useRouter()
   const [apiOrders, setApiOrders] = useState<Order[]>([])
   const [loadedFromApi, setLoadedFromApi] = useState(false)
   const [isHydrated, setIsHydrated] = useState(false)
+  const [isLoggingOut, setIsLoggingOut] = useState(false)
 
   useEffect(() => {
     setIsHydrated(true)
@@ -186,6 +189,17 @@ function AdminPage() {
     return minutes
   }
 
+  const handleLogout = async () => {
+    setIsLoggingOut(true)
+
+    try {
+      await fetch('/api/admin/logout', { method: 'POST' })
+    } finally {
+      router.replace('/admin/login')
+      router.refresh()
+    }
+  }
+
   return (
     <div className="min-h-screen bg-background">
       <Navigation />
@@ -193,9 +207,23 @@ function AdminPage() {
       <main className="pt-20 md:pt-24 pb-8 px-4">
         <div className="container mx-auto">
           {/* Header */}
-          <div className="mb-8">
-            <h1 className="text-3xl md:text-4xl font-bold mb-2">Admin Dashboard</h1>
-            <p className="text-muted-foreground">Manage orders and track performance</p>
+          <div className="mb-8 flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+            <div>
+              <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-sm font-medium text-primary">
+                <Lock className="h-4 w-4" />
+                Protected Admin Panel
+              </div>
+              <h1 className="text-3xl md:text-4xl font-bold mb-2">Admin Dashboard</h1>
+              <p className="text-muted-foreground">Manage orders and track performance</p>
+            </div>
+            <button
+              onClick={handleLogout}
+              disabled={isLoggingOut}
+              className="inline-flex items-center justify-center gap-2 rounded-xl border border-border px-4 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              <LogOut className="h-4 w-4" />
+              {isLoggingOut ? 'Signing out...' : 'Logout'}
+            </button>
           </div>
 
           {/* Stats row */}
