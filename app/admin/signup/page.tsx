@@ -50,7 +50,7 @@ export default function AdminSignupPage() {
   const [emailOtp, setEmailOtp] = useState("")
   const [emailStep, setEmailStep] = useState<"collect" | "verify">("collect")
 
-  const supabaseReady = useMemo(() => isSupabaseConfigured(), [])
+  const supabaseReady = useMemo(() => isSupabaseConfigured() && Boolean(supabase), [])
 
   const resetMessages = () => {
     setError("")
@@ -68,7 +68,7 @@ export default function AdminSignupPage() {
   const handleGoogleSignup = async () => {
     resetMessages()
 
-    if (!supabaseReady) {
+    if (!supabaseReady || !supabase) {
       setError("Supabase is not configured yet. Add your public URL and anon key first.")
       return
     }
@@ -93,7 +93,7 @@ export default function AdminSignupPage() {
     event.preventDefault()
     resetMessages()
 
-    if (!supabaseReady) {
+    if (!supabaseReady || !supabase) {
       setError("Supabase is not configured yet. Add your public URL and anon key first.")
       return
     }
@@ -135,7 +135,7 @@ export default function AdminSignupPage() {
     event.preventDefault()
     resetMessages()
 
-    if (!supabaseReady) {
+    if (!supabaseReady || !supabase) {
       setError("Supabase is not configured yet. Add your public URL and anon key first.")
       return
     }
@@ -189,7 +189,7 @@ export default function AdminSignupPage() {
     event.preventDefault()
     resetMessages()
 
-    if (!supabaseReady) {
+    if (!supabaseReady || !supabase) {
       setError("Supabase is not configured yet. Add your public URL and anon key first.")
       return
     }
