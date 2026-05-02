@@ -167,6 +167,7 @@ For the backend, deploy to any platform that supports Python/FastAPI (Railway, R
 <img width="1920" height="1080" alt="Screenshot (302)" src="https://github.com/user-attachments/assets/bdc14f5e-019b-4780-92b7-44c5faaf7942" />
 
 <img width="1920" height="1080" alt="Screenshot (303)" src="https://github.com/user-attachments/assets/051c1859-d571-47e7-ba25-8e626e5584a2" />
+<img width="1512" height="655" alt="Screenshot (304)" src="https://github.com/user-attachments/assets/04bcdc36-5747-4485-a0d5-556f490dbbb0" />
 
 
 ## 🤝 Contributing
