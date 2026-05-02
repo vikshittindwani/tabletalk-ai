@@ -1,6 +1,6 @@
 # 🍽️ TableTalk AI — Your Restaurant's AI Waiter
 
-> **AI-powered voice ordering for restaurants. Customers speak their order. Zero wait time. Zero missed orders.**
+> **AI-powered ordering for restaurants — via voice, phone call, or WhatsApp. Zero wait time. Zero missed orders.**
 
 🔗 **Live Demo:** [tabletalk-ai-d9dv.vercel.app](https://tabletalk-ai-d9dv.vercel.app)
 
@@ -8,7 +8,7 @@
 
 ## ✨ What is TableTalk AI?
 
-TableTalk AI is a full-stack, AI-powered restaurant ordering system that lets customers place orders using their voice. A customer simply taps the mic, speaks their order (e.g., *"One butter chicken and naan"*), and the AI waiter instantly confirms and saves it — no human waiter needed.
+TableTalk AI is a full-stack, AI-powered restaurant ordering system that lets customers place orders in multiple ways — via in-app voice, a **phone call**, or **WhatsApp**. A customer simply speaks or messages their order (e.g., *"One butter chicken and naan"*), and the AI waiter instantly confirms and saves it — no human waiter needed.
 
 The app is built with a **Next.js** frontend and a **FastAPI** backend, powered by **Groq** for fast AI inference and **Sarvam AI** for voice/speech capabilities.
 
@@ -16,8 +16,10 @@ The app is built with a **Next.js** frontend and a **FastAPI** backend, powered 
 
 ## 🚀 Features
 
-- 🎙️ **Voice Ordering** — Customers speak their order naturally; no menus to tap through
-- ⚡ **Instant AI Confirmation** — The AI processes and confirms the order in real time
+- 🎙️ **In-App Voice Ordering** — Customers tap the mic and speak their order directly in the browser
+- 📞 **Phone Call Ordering** — Customers can call in and place their order with the AI over a regular phone call
+- 💬 **WhatsApp Ordering** — Customers can send their order via WhatsApp and get instant AI confirmation
+- ⚡ **Instant AI Confirmation** — The AI processes and confirms orders in real time across all channels
 - 📊 **Live Admin Dashboard** — Real-time order tracking for restaurant staff
 - 🗂️ **Menu Page** — Browse available items before or during ordering
 - 📦 **Order Tracking** — Customers can track the status of their order
@@ -159,14 +161,6 @@ The frontend is deployed on **Vercel**. To deploy your own instance:
 For the backend, deploy to any platform that supports Python/FastAPI (Railway, Render, Fly.io, etc.).
 
 ---
-<img width="1920" height="1080" alt="Screenshot (300)" src="https://github.com/user-attachments/assets/4db02ff2-38f0-4d12-8bce-56dc1c1e7d8a" />
-<img width="1920" height="1080" alt="Screenshot (301)" src="https://github.com/user-attachments/assets/70f13368-66d0-4258-9d8a-5635ef9dba4d" />
-<img width="1920" height="1080" alt="Screenshot (302)" src="https://github.com/user-attachments/assets/c1a5cd28-116e-41df-9806-4dde6d7df5c2" />
-<img width="1920" height="1080" alt="Screenshot (303)" src="https://github.com/user-attachments/assets/36c6792c-2987-4715-b88a-a2442c6fd8eb" />
-
-
-
-
 
 ## 🤝 Contributing
 
