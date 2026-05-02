@@ -161,6 +161,13 @@ The frontend is deployed on **Vercel**. To deploy your own instance:
 For the backend, deploy to any platform that supports Python/FastAPI (Railway, Render, Fly.io, etc.).
 
 ---
+<img width="1920" height="1080" alt="Screenshot (300)" src="https://github.com/user-attachments/assets/de6a2449-3af9-4b8b-9690-a618306e3148" />
+<img width="1920" height="1080" alt="Screenshot (301)" src="https://github.com/user-attachments/assets/4e5af146-1839-4a96-b95b-1c61985a66dd" />
+
+<img width="1920" height="1080" alt="Screenshot (302)" src="https://github.com/user-attachments/assets/bdc14f5e-019b-4780-92b7-44c5faaf7942" />
+
+<img width="1920" height="1080" alt="Screenshot (303)" src="https://github.com/user-attachments/assets/051c1859-d571-47e7-ba25-8e626e5584a2" />
+
 
 ## 🤝 Contributing
 
