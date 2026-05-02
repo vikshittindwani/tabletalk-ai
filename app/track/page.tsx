@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
+import Image from 'next/image'
 import { Check, Clock, ChefHat, PackageCheck, CircleDot, CreditCard, Search } from 'lucide-react'
 import { Navigation } from '@/components/navigation'
 import { VoiceButton } from '@/components/voice-button'
@@ -292,7 +293,21 @@ function TrackPage() {
                   {displayOrder.items.map(item => (
                     <div key={item.id} className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
-                        <span className="text-2xl">{item.emoji}</span>
+                        <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-lg bg-muted">
+                          {item.image ? (
+                            <Image
+                              src={item.image}
+                              alt={item.name}
+                              fill
+                              sizes="48px"
+                              className="object-cover"
+                            />
+                          ) : (
+                            <div className="flex h-full w-full items-center justify-center text-xs font-medium text-muted-foreground">
+                              Food
+                            </div>
+                          )}
+                        </div>
                         <div>
                           <p className="font-medium">{item.name}</p>
                           <p className="text-sm text-muted-foreground">Qty: {item.quantity}</p>

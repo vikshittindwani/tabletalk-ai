@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import Image from 'next/image'
 import { X, Minus, Plus, Trash2, ShoppingBag } from 'lucide-react'
 import { useStore } from '@/lib/store'
 import { useRouter } from 'next/navigation'
@@ -85,9 +86,20 @@ export function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
                       exit={{ opacity: 0, x: -100 }}
                       className="flex gap-4 p-3 bg-muted rounded-xl"
                     >
-                      {/* Item image placeholder */}
-                      <div className="w-16 h-16 bg-background rounded-lg flex items-center justify-center text-2xl shrink-0">
-                        {item.emoji}
+                      <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-lg bg-background">
+                        {item.image ? (
+                          <Image
+                            src={item.image}
+                            alt={item.name}
+                            fill
+                            sizes="80px"
+                            className="object-cover"
+                          />
+                        ) : (
+                          <div className="flex h-full w-full items-center justify-center text-xs font-medium text-muted-foreground">
+                            Food
+                          </div>
+                        )}
                       </div>
 
                       <div className="flex-1 min-w-0">
