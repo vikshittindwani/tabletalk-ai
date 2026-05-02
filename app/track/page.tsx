@@ -55,6 +55,21 @@ function TrackPage() {
   const [loadedFromApi, setLoadedFromApi] = useState(false)
   
   useEffect(() => {
+    const requestedOrderNumber = new URLSearchParams(window.location.search).get('order')
+    if (requestedOrderNumber) {
+      setOrderNumber(requestedOrderNumber)
+    }
+
+    const savedOrder = window.sessionStorage.getItem('tabletalk_last_order')
+    if (savedOrder) {
+      try {
+        const parsed = JSON.parse(savedOrder) as Order & { timestamp: string }
+        if (!requestedOrderNumber || String(parsed.orderNumber) === requestedOrderNumber) {
+          setSearchedOrder({ ...parsed, timestamp: new Date(parsed.timestamp) })
+        }
+      } catch {}
+    }
+
     fetch('/api/orders')
       .then(r => r.json())
       .then(data => {
@@ -71,6 +86,14 @@ function TrackPage() {
           }))
           setApiOrders(normalized)
           setLoadedFromApi(true)
+
+          if (requestedOrderNumber) {
+            const parsedOrderNumber = parseInt(requestedOrderNumber, 10)
+            const found = normalized.find(o => o.orderNumber === parsedOrderNumber)
+            if (found) {
+              setSearchedOrder(found)
+            }
+          }
         }
       })
       .catch(() => {})

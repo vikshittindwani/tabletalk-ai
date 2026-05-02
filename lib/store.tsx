@@ -41,7 +41,7 @@ interface StoreContextType {
   clearCart: () => void
   getCartTotal: () => number
   getCartItemCount: () => number
-  placeOrder: (customerName: string, backendId?: string, backendOrderNumber?: number) => Order
+  placeOrder: (customerName: string, backendId?: string, backendOrderNumber?: number) => Promise<Order>
   updateOrderStatus: (orderId: string, status: Order['status']) => void
   currentOrder: Order | null
   setCurrentOrder: (order: Order | null) => void
@@ -216,7 +216,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
   const getCartItemCount = () => cart.reduce((sum, item) => sum + item.quantity, 0)
 
-  const placeOrder = (customerName: string, backendId?: string, backendOrderNumber?: number): Order => {
+  const placeOrder = async (customerName: string, backendId?: string, backendOrderNumber?: number): Promise<Order> => {
     const newOrder: Order = {
       id: backendId ?? `ord-${Date.now()}`,
       orderNumber: backendOrderNumber ?? orderCounter,
@@ -230,37 +230,42 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     setOrders(prev => [newOrder, ...prev])
     setOrderCounter(prev => prev + 1)
     setCurrentOrder(newOrder)
+    window.sessionStorage.setItem('tabletalk_last_order', JSON.stringify(newOrder))
     clearCart()
 
     // Automatically save the order to the backend (Supabase) if not already synced
     if (!backendId) {
-      fetch('/api/orders', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          customerName: newOrder.customerName,
-          items: newOrder.items,
-          total: newOrder.total
+      try {
+        const response = await fetch('/api/orders', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            customerName: newOrder.customerName,
+            items: newOrder.items,
+            total: newOrder.total
+          })
         })
-      })
-      .then(async res => {
-        if (!res.ok) {
-          const message = await res.text()
-          throw new Error(`Order sync failed (${res.status}): ${message || res.statusText}`)
+
+        if (!response.ok) {
+          const message = await response.text()
+          throw new Error(`Order sync failed (${response.status}): ${message || response.statusText}`)
         }
 
-        return res.json()
-      })
-      .then(data => {
+        const data = await response.json()
         if (data && data.id) {
+          const syncedOrder = { ...newOrder, id: data.id, orderNumber: data.orderNumber }
+
           // Update the optimistic local order with the real Supabase ID and Order Number
-          setOrders(prev => prev.map(o => o.id === newOrder.id ? { ...o, id: data.id, orderNumber: data.orderNumber } : o))
-          setCurrentOrder(prev => prev?.id === newOrder.id ? { ...prev, id: data.id, orderNumber: data.orderNumber } : prev)
+          setOrders(prev => prev.map(o => o.id === newOrder.id ? syncedOrder : o))
+          setCurrentOrder(prev => prev?.id === newOrder.id ? syncedOrder : prev)
+          window.sessionStorage.setItem('tabletalk_last_order', JSON.stringify(syncedOrder))
+          return syncedOrder
         }
-      })
-      .catch(error => {
+
+        return newOrder
+      } catch (error) {
         console.error(error instanceof Error ? error.message : error)
-      })
+      }
     }
 
     return newOrder

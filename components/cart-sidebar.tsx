@@ -5,7 +5,6 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { X, Minus, Plus, Trash2, ShoppingBag } from 'lucide-react'
 import { useStore } from '@/lib/store'
 import { useRouter } from 'next/navigation'
-import { buildApiUrl } from '@/lib/api'
 
 interface CartSidebarProps {
   isOpen: boolean
@@ -27,31 +26,13 @@ export function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
 
     setIsPlacingOrder(true)
 
-    try {
-      const response = await fetch(buildApiUrl('/api/orders'), {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          customerName: customerName.trim(),
-          items: cart,
-          total,
-        }),
-      })
-
-      if (response.ok) {
-        const savedOrder = await response.json()
-        placeOrder(customerName, savedOrder.id, savedOrder.orderNumber)
-      } else {
-        placeOrder(customerName)
-      }
-    } catch {
-      placeOrder(customerName)
-    }
+    // The store handles optimistic UI and background syncing to Supabase automatically
+    const order = await placeOrder(customerName.trim())
 
     setIsPlacingOrder(false)
     setCustomerName('')
     onClose()
-    router.push('/track')
+    router.push(`/track?order=${order.orderNumber}`)
   }
 
   return (
