@@ -86,6 +86,20 @@ def save_order(customer_name: str, items: list, total: float):
         raise HTTPException(status_code=500, detail="Order was not saved.")
     return row_to_order(response.data[0])
 
+
+def normalize_twilio_stream_url(stream_url: str) -> str:
+    normalized = stream_url.strip()
+    if not normalized:
+        return normalized
+
+    normalized = normalized.replace("/twilio/voice", "/twilio/media-stream")
+    if normalized.startswith("https://"):
+        normalized = normalized.replace("https://", "wss://", 1)
+    elif normalized.startswith("http://"):
+        normalized = normalized.replace("http://", "ws://", 1)
+
+    return normalized
+
 async def send_twilio_audio(websocket: WebSocket, stream_sid: str, mulaw_audio: bytes):
     chunk_size = 160
 
@@ -306,7 +320,7 @@ async def twilio_voice_webhook(request: Request):
     stream_url = os.getenv("TWILIO_STREAM_URL")
     if not stream_url:
         stream_url = str(request.url_for("twilio_media_stream"))
-        stream_url = stream_url.replace("https://", "wss://", 1).replace("http://", "ws://", 1)
+    stream_url = normalize_twilio_stream_url(stream_url)
 
     if not stream_url:
         xml = "<Response><Say>The AI ordering line is not configured yet. Please contact the restaurant.</Say></Response>"
